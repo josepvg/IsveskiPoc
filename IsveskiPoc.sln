@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.6.33723.286
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IsveskiPoc", "IsveskiPoc\IsveskiPoc.csproj", "{D0C33E46-63C6-49C7-82AA-BF461BDF5E87}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "IsVeskiPoc.Library", "IsVeskiPoc.Library\IsVeskiPoc.Library.csproj", "{98EB7F1F-88F3-4308-89F9-0558C371BA52}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D0C33E46-63C6-49C7-82AA-BF461BDF5E87}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D0C33E46-63C6-49C7-82AA-BF461BDF5E87}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D0C33E46-63C6-49C7-82AA-BF461BDF5E87}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D0C33E46-63C6-49C7-82AA-BF461BDF5E87}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98EB7F1F-88F3-4308-89F9-0558C371BA52}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98EB7F1F-88F3-4308-89F9-0558C371BA52}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98EB7F1F-88F3-4308-89F9-0558C371BA52}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98EB7F1F-88F3-4308-89F9-0558C371BA52}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {BC94FA01-D7BB-468E-9A6F-D4EF5AB91F80}
+	EndGlobalSection
+EndGlobal
