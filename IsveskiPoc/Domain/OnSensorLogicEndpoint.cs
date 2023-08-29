@@ -1,7 +1,10 @@
 ﻿using IsVeskiPoc.Library.Generated;
+using System.Diagnostics;
+using System;
 
 namespace IsveskiPoc.Domain
 {
+
     public class OnSensorLogicEndpoint
     {
         private static Dictionary<string, int> _usages = new Dictionary<string, int>();
@@ -10,13 +13,15 @@ namespace IsveskiPoc.Domain
         {
             try
             {
+                var json = System.Text.Json.JsonSerializer.Serialize(requestParameter);
+
                 var ticket = requestParameter.Tickets?.FirstOrDefault(x => x.TicketDefinitionId == TicketService.TicketDefinitionId);
 
                 if (ticket != null)
                 {
-                    var payload = System.Text.Json.JsonSerializer.Deserialize<KjarniPayload>(ticket.Data);
+                    var payload = System.Text.Json.JsonSerializer.Deserialize<KjarniPayload>(ticket.Data)!;
 
-                    if( HasAccessInKjarni(payload.id))
+                    if( HasAccessInKjarni(payload.userName))
                     {
                         await device.ShowMessageAsync(new ShowMessageDto
                         {

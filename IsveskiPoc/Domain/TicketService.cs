@@ -4,7 +4,8 @@ using System.Text.Json;
 namespace IsveskiPoc.Domain;
 
 
-record KjarniPayload( string id);
+//record KjarniPayload( string id);
+public record KjarniPayload(string userName,int teriaCafeteriaId );
 
 public class TicketService : ITicketService
 {
@@ -39,7 +40,7 @@ public class TicketService : ITicketService
             Buttons = new TemplateButton[0]
         };
 
-        var data = new KjarniPayload(idoncard);
+        var data = new KjarniPayload("hif",1184);
         var payload = JsonSerializer.Serialize(data);
         var result = await _clientService.CreateTicketAsync(
             new CreateTicketDto()
