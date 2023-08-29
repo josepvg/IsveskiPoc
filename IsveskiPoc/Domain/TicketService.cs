@@ -36,7 +36,7 @@ public class TicketService : ITicketService
             Description = "Verði þér að góðu",
             Expiry = DateTime.Now.AddDays(11),
             Time = DateTime.Now,
-            Title = "Mötuneytismiði 2",
+            Title = "Mötuneytismiði",
             Buttons = new TemplateButton[0]
         };
 

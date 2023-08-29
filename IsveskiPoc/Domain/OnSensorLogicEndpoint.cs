@@ -1,73 +1,87 @@
 ﻿using IsVeskiPoc.Library.Generated;
-using System.Diagnostics;
-using System;
 
 namespace IsveskiPoc.Domain
 {
 
     public class OnSensorLogicEndpoint
     {
-        private static Dictionary<string, int> _usages = new Dictionary<string, int>();
-
-        public static async Task OnSensor(RequestParameter requestParameter, IClientDeviceInterfaceClient device)
+        public static async Task OnSensor(RequestParameter requestParameter, 
+            IClientDeviceInterfaceClient device, 
+            IClientWalletClient walletClient,
+            HttpClient signalClient)
         {
+            var signalHelper = new SignalHelper(device, walletClient,signalClient);
+            signalHelper.Init(requestParameter.CommunicationId);
+
             try
             {
-                var json = System.Text.Json.JsonSerializer.Serialize(requestParameter);
+
+                KjarniHelper kjarniHelper = new KjarniHelper();
 
                 var ticket = requestParameter.Tickets?.FirstOrDefault(x => x.TicketDefinitionId == TicketService.TicketDefinitionId);
-
-                if (ticket != null)
+                if (ticket == null)
                 {
-                    var payload = System.Text.Json.JsonSerializer.Deserialize<KjarniPayload>(ticket.Data)!;
-
-                    if( HasAccessInKjarni(payload.userName))
-                    {
-                        await device.ShowMessageAsync(new ShowMessageDto
-                        {
-                            CommunicationId = requestParameter.CommunicationId,
-                            Close = "Ok bæ",
-                            Message = "Þetta er skilaboð",
-                            Image = "origologo",
-                            TimeoutSek = 10,
-                            Title = "Þetta er titill"
-                        });
-                    } else
-                    {
-                        await device.ShowMessageAsync(new ShowMessageDto
-                        {
-                            CommunicationId = requestParameter.CommunicationId,
-                            Close = "Ok bæ",
-                            Message = "Þú mátt ekki borða hérna",
-                            Image = "origologo",
-                            TimeoutSek = 10,
-                            Title = "Hafnað!!"
-                        });
-
-                    }
-                } else
-                {
-                    await device.ShowMessageAsync(new ShowMessageDto
-                    {
-                        CommunicationId = requestParameter.CommunicationId,
-                        Close = "Ok bæ",
-                        Message = "Þetta eru önnur skilaboð",
-                        Image = "origologo",
-                        TimeoutSek = 10,
-                        Title = "Þetta er titill"
-                    });
+                    await signalHelper.ShowMessage("Hafnað", "Finn ekki miða", "Loka", TimeSpan.FromSeconds(10));
+                    return;
                 }
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                throw;
-            }
-        }
 
-        private static bool HasAccessInKjarni(string id)
-        {
-            return true;
+                var payload = System.Text.Json.JsonSerializer.Deserialize<KjarniPayload>(ticket.Data)!;
+                await kjarniHelper.Init(payload);
+
+                var ticketIsValid = await kjarniHelper.TicketIsValid();
+                if (!ticketIsValid)
+                {
+                    await signalHelper.ShowMessage("Hafnað", "Þú mátt ekki borða hérna", "Loka", TimeSpan.FromSeconds(10));
+                    return;
+                }
+
+                var ticketHasRecentlyBeenUsed = await kjarniHelper.TicketHasRecentlyBeenUsed();
+                var employeeName = await kjarniHelper.GetFullName();
+                if (!ticketHasRecentlyBeenUsed)
+                {
+                    await signalHelper.ShowMessage("Velkomin", $"Velkomin í mötuneytið {employeeName}", "Loka", TimeSpan.FromSeconds(10));
+                    var currentMeal = await kjarniHelper.FindMealForTheDay();
+                    await signalHelper.AddMealLog(ticket.Id, "Þú borðaðir í mötuneytinu", $"Þú fékkst þér {currentMeal}");
+                    await signalHelper.SignalDevice();
+                    await kjarniHelper.RegisterPurchase();
+                    return;
+                }
+
+                var payForAnother = await signalHelper.ShowPrompt("Miði nýlega notaður", "Viltu greiða fyrir annan?", "Já", "Nei", TimeSpan.FromSeconds(30));
+                if (!payForAnother)
+                {
+                    await signalHelper.ShowMessage("Hætt við", "Þú valdir að greiða ekki fyrir annan", "Loka", TimeSpan.FromSeconds(10));
+                    return;
+                }
+
+                var companyOption = "Fyrirtæki";
+                var friendOption = "Vin";
+                var payForType = await signalHelper.ShowMenu("Greiða fyrir annan", "Fyrir hvern viltu greiða",
+                    new string[] { companyOption, friendOption, "Hætta við" }, TimeSpan.FromSeconds(30));
+                if (payForType == companyOption || payForType == friendOption)
+                {
+                    await signalHelper.ShowMessage("Velkomin", $"Velkomin í mötuneytið {employeeName} þú greiddir fyrir annann", "Loka", TimeSpan.FromSeconds(10));
+                    await signalHelper.AddMealLog(ticket.Id, "Þú borðaðir í mötuneytinu", $"Þú greiddir fyrir {payForType}");
+                    await signalHelper.SignalDevice();
+                    await kjarniHelper.RegisterPurchase();
+                    return;
+                }
+                await signalHelper.ShowMessage("Hætt við", "Þú valdir að greiða ekki fyrir annan", "Loka", TimeSpan.FromSeconds(10));
+            }
+            catch (ApiException<DeviceException> e)
+            {
+
+                if (e.Result.StatusDetail == StatusDetail.Timeout)
+                {
+                    await signalHelper.ShowMessage("Tókst ekki", "Tíminn rann út", "Loka", TimeSpan.FromSeconds(20));
+                }
+                else if (e.Result.StatusDetail == StatusDetail.Cancelled)
+                {
+                    await signalHelper.ShowMessage("Tókst", "Notandi hætti við", "Loka", TimeSpan.FromSeconds(20));
+                }
+
+            }
+
         }
     }
 }

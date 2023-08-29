@@ -42,9 +42,13 @@ if (app.Environment.IsDevelopment())
 }
 
 //Endpoint when a signal arrives
-app.MapPost("/isveskisignal", async ([FromBody] RequestParameter parameter, IClientDeviceInterfaceClient dev) =>
+app.MapPost("/isveskisignal", async ([FromBody] RequestParameter parameter, 
+                                                IClientDeviceInterfaceClient dev, 
+                                                IClientWalletClient walletClient,
+                                                IHttpClientFactory httpClientFactory) =>
 {
-    await OnSensorLogicEndpoint.OnSensor(parameter, dev);
+    var httpClient = httpClientFactory.CreateClient("isveskiiot");
+    await OnSensorLogicEndpoint.OnSensor(parameter, dev, walletClient, httpClient);
     return Results.Ok();
 }).RequireAuthorization(AuthorizationExtensions.ICEWALLET_KEY_POLICY);
 

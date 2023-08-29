@@ -17,6 +17,12 @@ public static class ClientExtensions
             client.DefaultRequestHeaders.Add("x-api-key", apikey);
         });
 
+        services.AddHttpClient("isveskiiot", client =>
+        {
+            client.BaseAddress = new Uri("https://isveskiiot.azurewebsites.net");
+            client.DefaultRequestHeaders.Add("x-api-key", "IO-Ez4S7H5kuVqDEehVEblBmTgjTDDwToCGV");
+        });
+
 
         services.AddScoped((Func<IServiceProvider, IClientDeviceInterfaceClient>)(sp =>
         {
